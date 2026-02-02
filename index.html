@@ -15,34 +15,35 @@
         body { font-family: -apple-system, system-ui; background: var(--primary-bg); margin: 0; padding: 15px; padding-bottom: 50px; }
         h2 { font-size: 1.2rem; border-left: 5px solid #f0ad4e; padding-left: 10px; margin-bottom: 15px; }
 
+        /* 表單佈局更新 */
         .form-section { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        .flex-date { flex: 0 0 130px; }
-        .flex-grow { flex: 1; }
         
-        .full-width { width: 100%; margin-bottom: 12px; }
-        label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 12px; flex-wrap: wrap; }
+        .input-group { width: 150px; } /* 寬度修改為 150px */
+        .full-width { width: 100%; max-width: 315px; margin-bottom: 12px; } /* 調整為 150*2 + gap */
+
+        label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; font-weight: bold; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; background: white; }
         
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; max-width: 315px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; }
         .btn-add { background: #5cb85c; color: white; }
         .btn-update { background: #4a90e2; color: white; display: none; }
 
-        .net-display { background: #fff; padding: 10px; border-radius: 5px; border: 2px solid #f0ad4e; margin-bottom: 10px; text-align: center; font-weight: bold; font-size: 1.1rem; }
-
+        .net-display { background: #fff; padding: 10px; border-radius: 5px; border: 2px solid #f0ad4e; margin-bottom: 10px; text-align: center; font-weight: bold; font-size: 1.1rem; max-width: 315px; }
+        
         .table-wrapper { overflow-x: auto; background: #fff; border: 1px solid #ddd; border-radius: 5px; }
         table { width: 100%; border-collapse: collapse; min-width: 1100px; font-size: 13px; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
-        th { background: var(--header-bg); position: sticky; top: 0; }
+        th { background: var(--header-bg); position: sticky; top: 0; z-index: 10; }
         
-        .summary-container { margin-top: 20px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .summary-container { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
         .summary-card { padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.6; }
         .blue-card { background: var(--summary-blue); border: 1px solid #00cccc; }
         .grey-card { background: var(--summary-grey); border: 1px solid #bbb; }
         .green-card { background: var(--summary-green); border: 1px solid #77cc77; }
         
-        .settled { background-color: #f9f9f9; color: #aaa; }
+        .settled { background-color: #f2f2f2; color: #888; }
         .btn-del { background: #ff4d4d; color: white; border: none; padding: 4px 6px; border-radius: 4px; }
     </style>
 </head>
@@ -55,12 +56,13 @@
             <label>詳情</label>
             <input type="text" id="details" placeholder="輸入詳情內容">
         </div>
+
         <div class="form-row">
-            <div class="flex-date">
+            <div class="input-group">
                 <label>日期</label>
                 <input type="date" id="date">
             </div>
-            <div class="flex-grow">
+            <div class="input-group">
                 <label>類別</label>
                 <select id="category">
                     <option value="Medical">Medical</option>
@@ -72,15 +74,16 @@
                 </select>
             </div>
         </div>
+
         <div class="form-row">
-            <div class="flex-grow">
+            <div class="input-group">
                 <label>金額 ($)</label>
                 <input type="number" id="expense" placeholder="0">
             </div>
-            <div class="flex-grow">
+            <div class="input-group">
                 <label>預付/存入者</label>
                 <select id="person">
-                    <option value="">請選擇人員</option>
+                    <option value="">選擇人員</option>
                     <option value="Josephine">Josephine</option>
                     <option value="Thomas">Thomas</option>
                     <option value="Kelvin">Kelvin</option>
@@ -92,20 +95,23 @@
                 </select>
             </div>
         </div>
+
         <div class="form-row">
-            <div class="flex-date">
+            <div class="input-group">
                 <label>收回日期</label>
                 <input type="date" id="receiveDate">
             </div>
-            <div class="flex-grow">
+            <div class="input-group">
                 <label>收回途徑</label>
-                <input type="text" id="receiveMethod" placeholder="例如：轉帳 / 現金">
+                <input type="text" id="receiveMethod" placeholder="例如：轉帳">
             </div>
         </div>
+
         <div class="full-width">
             <label>備註</label>
-            <textarea id="remarks" style="width:100%; height:40px;"></textarea>
+            <textarea id="remarks" style="height:40px;"></textarea>
         </div>
+
         <div class="btn-group">
             <button id="addBtn" class="btn-add" onclick="addRecord()">新增記錄</button>
             <button id="updateBtn" class="btn-update" onclick="updateRecord()">完成修改</button>
@@ -122,7 +128,7 @@
                     <th>日期</th>
                     <th>詳情</th>
                     <th>金額</th>
-                    <th>預付者</th>
+                    <th>人員</th>
                     <th>收回日期</th>
                     <th>途徑</th>
                     <th>備註</th>
@@ -135,17 +141,15 @@
 
     <div class="summary-container">
         <div class="summary-card blue-card">
-            <strong>2026 尚未收回的預付金額：</strong>
-            <div id="outstandingSummary">計算中...</div>
+            <strong>2026 尚未收回預付：</strong>
+            <div id="outstandingSummary"></div>
         </div>
-        
         <div class="summary-card green-card">
             <strong>各人 Contribution 總額：</strong>
-            <div id="contributionSummary">尚無資料</div>
+            <div id="contributionSummary"></div>
         </div>
-
         <div class="summary-card grey-card">
-            <strong>選取項目支出總額：</strong>
+            <strong>選取項目合計：</strong>
             <div id="selectedTotal" style="font-size: 1.2rem; font-weight: bold;">$0</div>
         </div>
     </div>
@@ -153,6 +157,7 @@
     <script>
         let db = JSON.parse(localStorage.getItem('maipo_db')) || [];
         let editId = null;
+        const people = ["Josephine", "Thomas", "Kelvin", "Sylvia", "Kathy", "Charles", "Matthew", "Edward"];
 
         document.getElementById('date').valueAsDate = new Date();
 
@@ -163,61 +168,41 @@
             let netTotal = 0;
             let contriMap = {};
             let outstandingMap = {};
-            const people = ["Josephine", "Thomas", "Kelvin", "Sylvia", "Kathy", "Charles", "Matthew", "Edward"];
             people.forEach(p => { contriMap[p] = 0; outstandingMap[p] = 0; });
 
             db.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((item) => {
-                // 1. 淨額與 Contribution 統計
                 if (item.category === "Contribution") {
                     netTotal += item.expense;
                     if (contriMap.hasOwnProperty(item.person)) contriMap[item.person] += item.expense;
                 } else {
                     netTotal -= item.expense;
-                    // 2. 未收回金額統計：只有「支出類」且「沒有收回日期」的才計入
                     if (!item.receiveDate && outstandingMap.hasOwnProperty(item.person)) {
                         outstandingMap[item.person] += item.expense;
                     }
                 }
-                
                 if (item.checked) selectedSum += item.expense;
 
-                const isSettled = item.receiveDate ? 'settled' : '';
                 const tr = document.createElement('tr');
-                tr.className = isSettled;
+                if (item.receiveDate) tr.className = 'settled';
                 tr.innerHTML = `
                     <td><input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck('${item.id}')"></td>
-                    <td>${item.date.substring(5)}</td>
+                    <td>${item.date ? item.date.substring(5) : ''}</td>
                     <td>${item.details}</td>
-                    <td style="color:${item.category==='Contribution'?'green':'red'}; font-weight:bold">$${item.expense}</td>
+                    <td style="color:${item.category==='Contribution'?'green':'red'}; font-weight:bold">$${item.expense.toLocaleString()}</td>
                     <td>${item.person}</td>
                     <td>${item.receiveDate || '-'}</td>
                     <td>${item.receiveMethod || '-'}</td>
-                    <td style="font-size:11px;">${item.remarks || ''}</td>
-                    <td>
-                        <button onclick="editRecord('${item.id}')">改</button>
-                        <button class="btn-del" onclick="deleteRecord('${item.id}')">刪</button>
-                    </td>
+                    <td>${item.remarks || ''}</td>
+                    <td><button onclick="editRecord('${item.id}')">改</button> <button class="btn-del" onclick="deleteRecord('${item.id}')">刪</button></td>
                 `;
                 list.appendChild(tr);
             });
 
-            // 更新介面
             document.getElementById('netAmountDisplay').innerText = `目前結餘淨額 (Net): $${netTotal.toLocaleString()}`;
             document.getElementById('selectedTotal').innerText = `$${selectedSum.toLocaleString()}`;
             
-            // 未收回摘要
-            let outHTML = '';
-            for (let name in outstandingMap) {
-                outHTML += `${name}: <span style="float:right;">$${outstandingMap[name].toLocaleString()}</span><br>`;
-            }
-            document.getElementById('outstandingSummary').innerHTML = outHTML;
-
-            // Contribution 摘要
-            let contriHTML = '';
-            for (let name in contriMap) {
-                if(contriMap[name] > 0) contriHTML += `${name}: <span style="float:right;">$${contriMap[name].toLocaleString()}</span><br>`;
-            }
-            document.getElementById('contributionSummary').innerHTML = contriHTML || '尚無資料';
+            document.getElementById('outstandingSummary').innerHTML = people.map(p => `${p}: <span style="float:right">$${outstandingMap[p].toLocaleString()}</span>`).join('<br>');
+            document.getElementById('contributionSummary').innerHTML = people.map(p => contriMap[p] > 0 ? `${p}: <span style="float:right">$${contriMap[p].toLocaleString()}</span>` : '').filter(s => s !== '').join('<br>');
 
             localStorage.setItem('maipo_db', JSON.stringify(db));
         }
@@ -244,15 +229,9 @@
         function editRecord(id) {
             const item = db.find(i => i.id === id);
             editId = id;
-            document.getElementById('date').value = item.date;
-            document.getElementById('details').value = item.details;
-            document.getElementById('category').value = item.category;
-            document.getElementById('expense').value = item.expense;
-            document.getElementById('person').value = item.person;
-            document.getElementById('receiveDate').value = item.receiveDate || '';
-            document.getElementById('receiveMethod').value = item.receiveMethod || '';
-            document.getElementById('remarks').value = item.remarks || '';
-            
+            ['date','details','category','expense','person','receiveDate','receiveMethod','remarks'].forEach(key => {
+                document.getElementById(key).value = item[key] || '';
+            });
             document.getElementById('addBtn').style.display = 'none';
             document.getElementById('updateBtn').style.display = 'block';
             window.scrollTo(0,0);
@@ -260,16 +239,9 @@
 
         function updateRecord() {
             const index = db.findIndex(i => i.id === editId);
-            db[index] = { ...db[index], 
-                date: document.getElementById('date').value,
-                details: document.getElementById('details').value,
-                category: document.getElementById('category').value,
-                expense: parseFloat(document.getElementById('expense').value) || 0,
-                person: document.getElementById('person').value,
-                receiveDate: document.getElementById('receiveDate').value,
-                receiveMethod: document.getElementById('receiveMethod').value,
-                remarks: document.getElementById('remarks').value
-            };
+            ['date','details','category','expense','person','receiveDate','receiveMethod','remarks'].forEach(key => {
+                db[index][key] = key === 'expense' ? parseFloat(document.getElementById(key).value) : document.getElementById(key).value;
+            });
             editId = null;
             resetForm();
             render();
@@ -277,26 +249,9 @@
             document.getElementById('updateBtn').style.display = 'none';
         }
 
-        function deleteRecord(id) {
-            if(confirm("確定刪除？")) {
-                db = db.filter(i => i.id !== id);
-                render();
-            }
-        }
-
-        function toggleCheck(id) {
-            const index = db.findIndex(i => i.id === id);
-            db[index].checked = !db[index].checked;
-            render();
-        }
-
-        function resetForm() {
-            document.getElementById('details').value = '';
-            document.getElementById('expense').value = '';
-            document.getElementById('receiveDate').value = '';
-            document.getElementById('receiveMethod').value = '';
-            document.getElementById('remarks').value = '';
-        }
+        function deleteRecord(id) { if(confirm("確定刪除？")) { db = db.filter(i => i.id !== id); render(); } }
+        function toggleCheck(id) { const index = db.findIndex(i => i.id === id); db[index].checked = !db[index].checked; render(); }
+        function resetForm() { ['details','expense','receiveDate','receiveMethod','remarks'].forEach(id => document.getElementById(id).value = ''); }
 
         render();
     </script>
