@@ -10,21 +10,19 @@
             --header-bg: #f7e1a0;
             --summary-blue: #00ffff;
             --summary-grey: #d9d9d9;
+            --summary-green: #90ee90;
         }
         body { font-family: -apple-system, system-ui; background: var(--primary-bg); margin: 0; padding: 15px; padding-bottom: 50px; }
         h2 { font-size: 1.2rem; border-left: 5px solid #f0ad4e; padding-left: 10px; margin-bottom: 15px; }
 
         .form-section { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        
-        /* 佈局調整 */
         .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        .flex-date { flex: 0 0 130px; } /* 固定日期寬度 */
+        .flex-date { flex: 0 0 130px; }
         .flex-grow { flex: 1; }
         
         .full-width { width: 100%; margin-bottom: 12px; }
         label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; background: white; }
-        textarea { resize: vertical; height: 60px; font-family: inherit; }
         
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         button { flex: 1; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; }
@@ -34,15 +32,18 @@
         .net-display { background: #fff; padding: 10px; border-radius: 5px; border: 2px solid #f0ad4e; margin-bottom: 10px; text-align: center; font-weight: bold; font-size: 1.1rem; }
 
         .table-wrapper { overflow-x: auto; background: #fff; border: 1px solid #ddd; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 14px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; font-size: 13px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: left; }
         th { background: var(--header-bg); position: sticky; top: 0; }
         
         .summary-container { margin-top: 20px; display: grid; grid-template-columns: 1fr; gap: 10px; }
         .summary-card { padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.6; }
         .blue-card { background: var(--summary-blue); border: 1px solid #00cccc; }
         .grey-card { background: var(--summary-grey); border: 1px solid #bbb; }
-        .btn-del { background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 4px; font-size: 12px; }
+        .green-card { background: var(--summary-green); border: 1px solid #77cc77; }
+        
+        .settled { background-color: #f9f9f9; color: #aaa; }
+        .btn-del { background: #ff4d4d; color: white; border: none; padding: 4px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -54,7 +55,6 @@
             <label>詳情</label>
             <input type="text" id="details" placeholder="輸入詳情內容">
         </div>
-
         <div class="form-row">
             <div class="flex-date">
                 <label>日期</label>
@@ -72,7 +72,6 @@
                 </select>
             </div>
         </div>
-
         <div class="form-row">
             <div class="flex-grow">
                 <label>金額 ($)</label>
@@ -93,12 +92,20 @@
                 </select>
             </div>
         </div>
-
-        <div class="full-width">
-            <label>備註 (Remarks)</label>
-            <textarea id="remarks" placeholder="額外資訊..."></textarea>
+        <div class="form-row">
+            <div class="flex-date">
+                <label>收回日期</label>
+                <input type="date" id="receiveDate">
+            </div>
+            <div class="flex-grow">
+                <label>收回途徑</label>
+                <input type="text" id="receiveMethod" placeholder="例如：轉帳 / 現金">
+            </div>
         </div>
-
+        <div class="full-width">
+            <label>備註</label>
+            <textarea id="remarks" style="width:100%; height:40px;"></textarea>
+        </div>
         <div class="btn-group">
             <button id="addBtn" class="btn-add" onclick="addRecord()">新增記錄</button>
             <button id="updateBtn" class="btn-update" onclick="updateRecord()">完成修改</button>
@@ -114,9 +121,10 @@
                     <th>選取</th>
                     <th>日期</th>
                     <th>詳情</th>
-                    <th>類別</th>
                     <th>金額</th>
-                    <th>人員</th>
+                    <th>預付者</th>
+                    <th>收回日期</th>
+                    <th>途徑</th>
                     <th>備註</th>
                     <th>操作</th>
                 </tr>
@@ -127,11 +135,17 @@
 
     <div class="summary-container">
         <div class="summary-card blue-card">
+            <strong>2026 尚未收回的預付金額：</strong>
+            <div id="outstandingSummary">計算中...</div>
+        </div>
+        
+        <div class="summary-card green-card">
             <strong>各人 Contribution 總額：</strong>
             <div id="contributionSummary">尚無資料</div>
         </div>
+
         <div class="summary-card grey-card">
-            <strong>選取項目合計：</strong>
+            <strong>選取項目支出總額：</strong>
             <div id="selectedTotal" style="font-size: 1.2rem; font-weight: bold;">$0</div>
         </div>
     </div>
@@ -147,27 +161,38 @@
             list.innerHTML = '';
             let selectedSum = 0;
             let netTotal = 0;
-            let contriMap = { "Josephine":0, "Thomas":0, "Kelvin":0, "Sylvia":0, "Kathy":0, "Charles":0, "Matthew":0, "Edward":0 };
+            let contriMap = {};
+            let outstandingMap = {};
+            const people = ["Josephine", "Thomas", "Kelvin", "Sylvia", "Kathy", "Charles", "Matthew", "Edward"];
+            people.forEach(p => { contriMap[p] = 0; outstandingMap[p] = 0; });
 
             db.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((item) => {
+                // 1. 淨額與 Contribution 統計
                 if (item.category === "Contribution") {
                     netTotal += item.expense;
                     if (contriMap.hasOwnProperty(item.person)) contriMap[item.person] += item.expense;
                 } else {
                     netTotal -= item.expense;
+                    // 2. 未收回金額統計：只有「支出類」且「沒有收回日期」的才計入
+                    if (!item.receiveDate && outstandingMap.hasOwnProperty(item.person)) {
+                        outstandingMap[item.person] += item.expense;
+                    }
                 }
                 
                 if (item.checked) selectedSum += item.expense;
 
+                const isSettled = item.receiveDate ? 'settled' : '';
                 const tr = document.createElement('tr');
+                tr.className = isSettled;
                 tr.innerHTML = `
                     <td><input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck('${item.id}')"></td>
                     <td>${item.date.substring(5)}</td>
                     <td>${item.details}</td>
-                    <td>${item.category}</td>
                     <td style="color:${item.category==='Contribution'?'green':'red'}; font-weight:bold">$${item.expense}</td>
                     <td>${item.person}</td>
-                    <td style="font-size:12px; color:#666">${item.remarks || ''}</td>
+                    <td>${item.receiveDate || '-'}</td>
+                    <td>${item.receiveMethod || '-'}</td>
+                    <td style="font-size:11px;">${item.remarks || ''}</td>
                     <td>
                         <button onclick="editRecord('${item.id}')">改</button>
                         <button class="btn-del" onclick="deleteRecord('${item.id}')">刪</button>
@@ -176,14 +201,24 @@
                 list.appendChild(tr);
             });
 
+            // 更新介面
             document.getElementById('netAmountDisplay').innerText = `目前結餘淨額 (Net): $${netTotal.toLocaleString()}`;
             document.getElementById('selectedTotal').innerText = `$${selectedSum.toLocaleString()}`;
             
+            // 未收回摘要
+            let outHTML = '';
+            for (let name in outstandingMap) {
+                outHTML += `${name}: <span style="float:right;">$${outstandingMap[name].toLocaleString()}</span><br>`;
+            }
+            document.getElementById('outstandingSummary').innerHTML = outHTML;
+
+            // Contribution 摘要
             let contriHTML = '';
             for (let name in contriMap) {
-                if(contriMap[name] > 0) contriHTML += `<b>${name}</b>: $${contriMap[name].toLocaleString()}<br>`;
+                if(contriMap[name] > 0) contriHTML += `${name}: <span style="float:right;">$${contriMap[name].toLocaleString()}</span><br>`;
             }
-            document.getElementById('contributionSummary').innerHTML = contriHTML || '尚無 Contribution 記錄';
+            document.getElementById('contributionSummary').innerHTML = contriHTML || '尚無資料';
+
             localStorage.setItem('maipo_db', JSON.stringify(db));
         }
 
@@ -195,6 +230,8 @@
                 category: document.getElementById('category').value,
                 expense: parseFloat(document.getElementById('expense').value) || 0,
                 person: document.getElementById('person').value,
+                receiveDate: document.getElementById('receiveDate').value,
+                receiveMethod: document.getElementById('receiveMethod').value,
                 remarks: document.getElementById('remarks').value,
                 checked: false
             };
@@ -212,7 +249,10 @@
             document.getElementById('category').value = item.category;
             document.getElementById('expense').value = item.expense;
             document.getElementById('person').value = item.person;
+            document.getElementById('receiveDate').value = item.receiveDate || '';
+            document.getElementById('receiveMethod').value = item.receiveMethod || '';
             document.getElementById('remarks').value = item.remarks || '';
+            
             document.getElementById('addBtn').style.display = 'none';
             document.getElementById('updateBtn').style.display = 'block';
             window.scrollTo(0,0);
@@ -226,6 +266,8 @@
                 category: document.getElementById('category').value,
                 expense: parseFloat(document.getElementById('expense').value) || 0,
                 person: document.getElementById('person').value,
+                receiveDate: document.getElementById('receiveDate').value,
+                receiveMethod: document.getElementById('receiveMethod').value,
                 remarks: document.getElementById('remarks').value
             };
             editId = null;
@@ -251,7 +293,8 @@
         function resetForm() {
             document.getElementById('details').value = '';
             document.getElementById('expense').value = '';
-            document.getElementById('person').value = '';
+            document.getElementById('receiveDate').value = '';
+            document.getElementById('receiveMethod').value = '';
             document.getElementById('remarks').value = '';
         }
 
