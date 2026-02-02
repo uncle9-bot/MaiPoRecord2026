@@ -8,39 +8,36 @@
         :root {
             --primary-bg: #fcf8e3;
             --header-bg: #f7e1a0;
-            --medical-color: #f8d7da;
-            --medicine-color: #fff3cd;
-            --contri-color: #d1ecf1;
+            --summary-blue: #00ffff;
+            --summary-grey: #d9d9d9;
         }
         body { font-family: -apple-system, system-ui; background: var(--primary-bg); margin: 0; padding: 15px; padding-bottom: 50px; }
         h2 { font-size: 1.2rem; border-left: 5px solid #f0ad4e; padding-left: 10px; margin-bottom: 15px; }
 
-        /* 表單區域 */
         .form-section { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .grid-input { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .full-width { grid-column: span 2; }
         label { font-size: 12px; color: #666; display: block; margin-bottom: 3px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; background: white; }
+        
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         button { flex: 1; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; }
         .btn-add { background: #5cb85c; color: white; }
         .btn-update { background: #4a90e2; color: white; display: none; }
 
-        /* 列表區域 - 支援捲動 */
+        /* 淨額顯示區 */
+        .net-display { background: #fff; padding: 10px; border-radius: 5px; border: 2px solid #f0ad4e; margin-bottom: 10px; text-align: center; font-weight: bold; font-size: 1.1rem; }
+
         .table-wrapper { overflow-x: auto; background: #fff; border: 1px solid #ddd; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 14px; }
         th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
         th { background: var(--header-bg); position: sticky; top: 0; }
         
-        .cat-Medical { background: var(--medical-color); }
-        .cat-Medicine { background: var(--medicine-color); }
-        .cat-Contribution { background: var(--contri-color); }
-
-        /* 統計區 */
         .summary-container { margin-top: 20px; display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .summary-card { padding: 12px; border-radius: 8px; font-size: 14px; }
-        .blue-card { background: #00ffff; border: 1px solid #00cccc; }
-        .grey-card { background: #d9d9d9; border: 1px solid #bbb; }
+        .summary-card { padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.6; }
+        .blue-card { background: var(--summary-blue); border: 1px solid #00cccc; }
+        .grey-card { background: var(--summary-grey); border: 1px solid #bbb; }
+        .btn-del { background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -51,7 +48,7 @@
         <div class="grid-input">
             <div class="full-width">
                 <label>詳情</label>
-                <input type="text" id="details" placeholder="例如：醫院覆診">
+                <input type="text" id="details" placeholder="輸入詳情內容">
             </div>
             <div>
                 <label>日期</label>
@@ -63,22 +60,38 @@
                     <option value="Medical">Medical</option>
                     <option value="Medicine">Medicine</option>
                     <option value="Contribution">Contribution</option>
+                    <option value="Domestic Helper">Domestic Helper</option>
+                    <option value="Home">Home</option>
                     <option value="Other">Other</option>
                 </select>
             </div>
             <div>
-                <label>支出 ($)</label>
+                <label>金額 ($)</label>
                 <input type="number" id="expense" placeholder="0">
             </div>
             <div>
                 <label>預付/存入者</label>
-                <input type="text" id="person" placeholder="姓名">
+                <select id="person">
+                    <option value="">請選擇人員</option>
+                    <option value="Josephine">Josephine</option>
+                    <option value="Thomas">Thomas</option>
+                    <option value="Kelvin">Kelvin</option>
+                    <option value="Sylvia">Sylvia</option>
+                    <option value="Kathy">Kathy</option>
+                    <option value="Charles">Charles</option>
+                    <option value="Matthew">Matthew</option>
+                    <option value="Edward">Edward</option>
+                </select>
             </div>
         </div>
         <div class="btn-group">
             <button id="addBtn" class="btn-add" onclick="addRecord()">新增記錄</button>
             <button id="updateBtn" class="btn-update" onclick="updateRecord()">完成修改</button>
         </div>
+    </div>
+
+    <div class="net-display" id="netAmountDisplay">
+        結餘淨額: $0
     </div>
 
     <div class="table-wrapper">
@@ -90,7 +103,7 @@
                     <th>詳情</th>
                     <th>類別</th>
                     <th>金額</th>
-                    <th>預付者</th>
+                    <th>人員</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -100,8 +113,8 @@
 
     <div class="summary-container">
         <div class="summary-card blue-card">
-            <strong>各人預付總額統計：</strong>
-            <div id="personSummary">尚無資料</div>
+            <strong>各人 Contribution 總額：</strong>
+            <div id="contributionSummary">尚無資料</div>
         </div>
         <div class="summary-card grey-card">
             <strong>選取項目合計：</strong>
@@ -113,19 +126,25 @@
         let db = JSON.parse(localStorage.getItem('maipo_db')) || [];
         let editId = null;
 
-        // 初始化日期為今天
         document.getElementById('date').valueAsDate = new Date();
 
         function render() {
             const list = document.getElementById('dataList');
             list.innerHTML = '';
             let selectedSum = 0;
-            let personMap = {};
+            let netTotal = 0;
+            let contriMap = { "Josephine":0, "Thomas":0, "Kelvin":0, "Sylvia":0, "Kathy":0, "Charles":0, "Matthew":0, "Edward":0 };
 
+            // 排序：日期從新到舊
             db.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach((item) => {
-                // 計算各人總額
-                if (item.person) {
-                    personMap[item.person] = (personMap[item.person] || 0) + (item.expense || 0);
+                // 淨額計算：如果是 Contribution 視為存入(+)，其他視為支出(-)
+                if (item.category === "Contribution") {
+                    netTotal += item.expense;
+                    if (contriMap.hasOwnProperty(item.person)) {
+                        contriMap[item.person] += item.expense;
+                    }
+                } else {
+                    netTotal -= item.expense;
                 }
                 
                 if (item.checked) selectedSum += item.expense;
@@ -135,22 +154,28 @@
                     <td><input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck('${item.id}')"></td>
                     <td>${item.date.substring(5)}</td>
                     <td>${item.details}</td>
-                    <td><span class="cat-${item.category}">${item.category}</span></td>
-                    <td style="color:red; font-weight:bold">$${item.expense}</td>
+                    <td>${item.category}</td>
+                    <td style="color:${item.category==='Contribution'?'green':'red'}; font-weight:bold">$${item.expense}</td>
                     <td>${item.person}</td>
-                    <td><button onclick="editRecord('${item.id}')">改</button></td>
+                    <td>
+                        <button onclick="editRecord('${item.id}')">改</button>
+                        <button class="btn-del" onclick="deleteRecord('${item.id}')">刪</button>
+                    </td>
                 `;
                 list.appendChild(tr);
             });
 
-            // 更新合計區域
+            // 更新顯示
+            document.getElementById('netAmountDisplay').innerText = `目前結餘淨額 (Net): $${netTotal.toLocaleString()}`;
             document.getElementById('selectedTotal').innerText = `$${selectedSum.toLocaleString()}`;
             
-            let summaryHTML = '';
-            for (let name in personMap) {
-                summaryHTML += `${name}: $${personMap[name].toLocaleString()}<br>`;
+            let contriHTML = '';
+            for (let name in contriMap) {
+                if(contriMap[name] > 0) {
+                    contriHTML += `<b>${name}</b>: $${contriMap[name].toLocaleString()}<br>`;
+                }
             }
-            document.getElementById('personSummary').innerHTML = summaryHTML || '尚無資料';
+            document.getElementById('contributionSummary').innerHTML = contriHTML || '尚無 Contribution 記錄';
             
             localStorage.setItem('maipo_db', JSON.stringify(db));
         }
@@ -165,6 +190,7 @@
                 person: document.getElementById('person').value,
                 checked: false
             };
+            if(!newItem.details || !newItem.person) { alert("請填寫詳情及選擇人員"); return; }
             db.push(newItem);
             resetForm();
             render();
@@ -172,14 +198,12 @@
 
         function editRecord(id) {
             const item = db.find(i => i.id === id);
-            if (!item) return;
             editId = id;
             document.getElementById('date').value = item.date;
             document.getElementById('details').value = item.details;
             document.getElementById('category').value = item.category;
             document.getElementById('expense').value = item.expense;
             document.getElementById('person').value = item.person;
-            
             document.getElementById('addBtn').style.display = 'none';
             document.getElementById('updateBtn').style.display = 'block';
             window.scrollTo(0,0);
@@ -187,8 +211,7 @@
 
         function updateRecord() {
             const index = db.findIndex(i => i.id === editId);
-            db[index] = {
-                ...db[index],
+            db[index] = { ...db[index], 
                 date: document.getElementById('date').value,
                 details: document.getElementById('details').value,
                 category: document.getElementById('category').value,
@@ -202,6 +225,13 @@
             document.getElementById('updateBtn').style.display = 'none';
         }
 
+        function deleteRecord(id) {
+            if(confirm("確定刪除？")) {
+                db = db.filter(i => i.id !== id);
+                render();
+            }
+        }
+
         function toggleCheck(id) {
             const index = db.findIndex(i => i.id === id);
             db[index].checked = !db[index].checked;
@@ -211,6 +241,7 @@
         function resetForm() {
             document.getElementById('details').value = '';
             document.getElementById('expense').value = '';
+            document.getElementById('person').value = '';
         }
 
         render();
